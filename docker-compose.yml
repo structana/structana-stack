@@ -1,31 +1,44 @@
 version: '3.8'
 
 services:
-  app:
-    image: node:18
-    working_dir: /app
+  structana:
+    image: nginx
     volumes:
-      - ./app:/app
-    command: sh -c "npm install && npm start"
-    ports:
-      - "3000:3000"
-    depends_on:
-      - mongo
+      - ./apps/structana:/usr/share/nginx/html:ro
+    container_name: structana
+    networks:
+      - web
 
-  mongo:
-    image: mongo:6
+  cosmicauracle:
+    image: nginx
     volumes:
-      - mongo-data:/data/db
+      - ./apps/cosmicauracle:/usr/share/nginx/html:ro
+    container_name: cosmicauracle
+    networks:
+      - web
 
-  nginx:
+  funemployed:
+    image: nginx
+    volumes:
+      - ./apps/funemployed:/usr/share/nginx/html:ro
+    container_name: funemployed
+    networks:
+      - web
+
+  nginx-proxy:
     image: nginx:latest
+    container_name: nginx-proxy
     ports:
       - "80:80"
       - "443:443"
     volumes:
-      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx:/etc/nginx/conf.d
     depends_on:
-      - app
+      - structana
+      - cosmicauracle
+      - funemployed
+    networks:
+      - web
 
-volumes:
-  mongo-data:
+networks:
+  web:
