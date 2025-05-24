@@ -17,10 +17,10 @@ http:
         - cosmicauracle-redirect
       service: noop@internal
     funemployed:
-      rule: Host(`www.funemployed.com`)
+      rule: Host(`www.funemployed.tools`)
       service: funemployed-files
     funemployed-root:
-      rule: Host(`funemployed.com`)
+      rule: Host(`funemployed.tools`)
       middlewares:
         - funemployed-redirect
       service: noop@internal
@@ -38,8 +38,8 @@ http:
         permanent: true
     funemployed-redirect:
       redirectRegex:
-        regex: "^https?://funemployed\\.com/(.*)"
-        replacement: "https://www.funemployed.com/$1"
+        regex: "^https?://funemployed\\.tools/(.*)"
+        replacement: "https://www.funemployed.tools/$1"
         permanent: true
 
   services:
