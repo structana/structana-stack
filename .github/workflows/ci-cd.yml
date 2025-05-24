@@ -1,0 +1,68 @@
+name: CI/CD
+
+on:
+  push:
+    branches: [ main ]
+
+env:
+  REGISTRY: ghcr.io/${{ github.repository }}
+  IMAGE_TAG: ${{ github.sha }}
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+
+      - name: Log in to registry
+        uses: docker/login-action@v2
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ secrets.REGISTRY_USER }}
+          password: ${{ secrets.REGISTRY_PASSWORD }}
+
+      - name: Build app image
+        run: |
+          docker build -t ${{ env.REGISTRY }}/app:${{ env.IMAGE_TAG }} ./app
+
+      - name: Build nginx image
+        run: |
+          docker build -t ${{ env.REGISTRY }}/nginx:${{ env.IMAGE_TAG }} ./nginx
+
+      - name: Run backend tests
+        run: |
+          docker run --rm ${{ env.REGISTRY }}/app:${{ env.IMAGE_TAG }} npm test
+
+      - name: Run smoke tests
+        run: |
+          container_id=$(docker run -d -p 3000:3000 ${{ env.REGISTRY }}/app:${{ env.IMAGE_TAG }})
+          for i in {1..10}; do
+            if curl -fs http://localhost:3000 >/dev/null; then
+              echo "Smoke test passed" && break
+            fi
+            sleep 3
+          done
+          docker rm -f "$container_id"
+
+      - name: Push images
+        run: |
+          docker push ${{ env.REGISTRY }}/app:${{ env.IMAGE_TAG }}
+          docker push ${{ env.REGISTRY }}/nginx:${{ env.IMAGE_TAG }}
+
+      - name: Deploy to droplet
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.DEPLOY_HOST }}
+          username: ${{ secrets.DEPLOY_USER }}
+          key: ${{ secrets.DEPLOY_KEY }}
+          script: |
+            cd ${{ secrets.DEPLOY_PATH }}
+            docker compose pull
+            docker compose up -d
+            if docker ps --filter name=traefik -q | grep -q .; then
+              docker kill -s HUP $(docker ps --filter name=traefik -q)
+            fi
+
