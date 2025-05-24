@@ -11,6 +11,17 @@ services:
       - "3000:3000"
     depends_on:
       - mongo
+    labels:
+      - "traefik.http.routers.app.rule=PathPrefix(`/`)"
+      - "traefik.http.services.app.loadbalancer.server.port=3000"
+
+  js-backend:
+    build: ./js-backend
+    labels:
+      - "traefik.http.routers.js-backend.rule=PathPrefix(`/api/js`)"
+      - "traefik.http.services.js-backend.loadbalancer.server.port=3000"
+    depends_on:
+      - mongo
 
   mongo:
     image: mongo:6
@@ -28,6 +39,7 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock:ro
     depends_on:
       - app
+
 
   py-backend:
     build: ./py-backend
