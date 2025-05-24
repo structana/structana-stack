@@ -11,6 +11,17 @@ services:
       - "3000"
     depends_on:
       - mongo
+    labels:
+      - "traefik.http.routers.app.rule=PathPrefix(`/`)"
+      - "traefik.http.services.app.loadbalancer.server.port=3000"
+
+  js-backend:
+    build: ./js-backend
+    labels:
+      - "traefik.http.routers.js-backend.rule=PathPrefix(`/api/js`)"
+      - "traefik.http.services.js-backend.loadbalancer.server.port=3000"
+    depends_on:
+      - mongo
 
   mongo:
     image: mongo:6
@@ -26,11 +37,27 @@ services:
       - "80:80"
     volumes:
       - ./traefik/traefik.yml:/etc/traefik/traefik.yml:ro
-      - ./traefik/dynamic.yml:/etc/traefik/dynamic.yml:ro
-      - ./www:/srv/www:ro
-      - /var/run/docker.sock:/var/run/docker.sock
+      - ./traefik/dynamic.toml:/etc/traefik/dynamic.toml:ro
+      - /var/run/docker.sock:/var/run/docker.sock:ro
     depends_on:
       - app
+
+
+  py-backend:
+    build: ./py-backend
+    labels:
+      - "traefik.http.routers.py-backend.rule=PathPrefix(`/api/py`)"
+      - "traefik.http.services.py-backend.loadbalancer.server.port=8000"
+
+  traefik:
+    image: traefik:v2.9
+    command:
+      - "--providers.docker=true"
+      - "--entrypoints.web.address=:80"
+    ports:
+      - "8080:80"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
 
 volumes:
   mongo-data:

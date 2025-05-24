@@ -1,0 +1,28 @@
+[http.routers.redirect-root]
+  rule = "Host(`structana.com`) || Host(`funemployed.tools`) || Host(`cosmicauracle.com`)"
+  middlewares = ["to-www"]
+  entryPoints = ["web", "websecure"]
+  service = "noop"
+
+[http.routers.py-hello]
+  rule = "Host(`test.structana.com`) && Path(`/api/py/hello`)"
+  entryPoints = ["web", "websecure"]
+  service = "app"
+
+[http.routers.js-hello]
+  rule = "Host(`test.structana.com`) && Path(`/api/js/hello`)"
+  entryPoints = ["web", "websecure"]
+  service = "app"
+
+[http.middlewares.to-www.redirectRegex]
+  regex = "^https?://(structana\\.com|funemployed\\.tools|cosmicauracle\\.com)(.*)"
+  replacement = "https://www.$1$2"
+  permanent = true
+
+[http.services.noop.loadBalancer]
+  [[http.services.noop.loadBalancer.servers]]
+    url = "http://0.0.0.0"
+
+[http.services.app.loadBalancer]
+  [[http.services.app.loadBalancer.servers]]
+    url = "http://app:3000"

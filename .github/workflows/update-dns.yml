@@ -1,0 +1,25 @@
+name: Update DNS records
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [ main ]
+
+jobs:
+  update-dns:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+      - name: Update Namecheap DNS
+        env:
+          NAMECHEAP_API_USER: ${{ secrets.NAMECHEAP_API_USER }}
+          NAMECHEAP_API_KEY: ${{ secrets.NAMECHEAP_API_KEY }}
+          NAMECHEAP_USERNAME: ${{ secrets.NAMECHEAP_USERNAME }}
+          NAMECHEAP_CLIENT_IP: ${{ secrets.NAMECHEAP_CLIENT_IP }}
+          DOMAIN: ${{ secrets.NAMECHEAP_DOMAIN }}
+          TARGET_IP: ${{ secrets.NAMECHEAP_TARGET_IP }}
+          CNAME_TARGET: ${{ secrets.NAMECHEAP_CNAME_TARGET }}
+        run: node scripts/update-namecheap-dns.js
