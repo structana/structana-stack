@@ -7,8 +7,8 @@ services:
     volumes:
       - ./app:/app
     command: sh -c "npm install && npm start"
-    ports:
-      - "3000:3000"
+    expose:
+      - "3000"
     depends_on:
       - mongo
     labels:
@@ -29,10 +29,12 @@ services:
       - mongo-data:/data/db
 
   traefik:
-    image: traefik:v2.10
+    image: traefik:v2.9
+    command:
+      - --providers.file.directory=/etc/traefik
+      - --entrypoints.web.address=:80
     ports:
       - "80:80"
-      - "443:443"
     volumes:
       - ./traefik/traefik.yml:/etc/traefik/traefik.yml:ro
       - ./traefik/dynamic.toml:/etc/traefik/dynamic.toml:ro
