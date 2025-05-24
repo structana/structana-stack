@@ -7,12 +7,12 @@
 [http.routers.py-hello]
   rule = "Host(`test.structana.com`) && Path(`/api/py/hello`)"
   entryPoints = ["web", "websecure"]
-  service = "app"
+  service = "py-backend"
 
 [http.routers.js-hello]
   rule = "Host(`test.structana.com`) && Path(`/api/js/hello`)"
   entryPoints = ["web", "websecure"]
-  service = "app"
+  service = "js-backend"
 
 [http.middlewares.to-www.redirectRegex]
   regex = "^https?://(structana\\.com|funemployed\\.tools|cosmicauracle\\.com)(.*)"
@@ -26,3 +26,11 @@
 [http.services.app.loadBalancer]
   [[http.services.app.loadBalancer.servers]]
     url = "http://app:3000"
+
+[http.services.py-backend.loadBalancer]
+  [[http.services.py-backend.loadBalancer.servers]]
+    url = "http://py-backend:8000"
+
+[http.services.js-backend.loadBalancer]
+  [[http.services.js-backend.loadBalancer.servers]]
+    url = "http://js-backend:3000"
