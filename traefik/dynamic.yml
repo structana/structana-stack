@@ -1,0 +1,54 @@
+http:
+  routers:
+    structana:
+      rule: Host(`www.structana.com`)
+      service: structana-files
+    structana-root:
+      rule: Host(`structana.com`)
+      middlewares:
+        - structana-redirect
+      service: noop@internal
+    cosmicauracle:
+      rule: Host(`www.cosmicauracle.com`)
+      service: cosmicauracle-files
+    cosmicauracle-root:
+      rule: Host(`cosmicauracle.com`)
+      middlewares:
+        - cosmicauracle-redirect
+      service: noop@internal
+    funemployed:
+      rule: Host(`www.funemployed.com`)
+      service: funemployed-files
+    funemployed-root:
+      rule: Host(`funemployed.com`)
+      middlewares:
+        - funemployed-redirect
+      service: noop@internal
+
+  middlewares:
+    structana-redirect:
+      redirectRegex:
+        regex: "^https?://structana\\.com/(.*)"
+        replacement: "https://www.structana.com/$1"
+        permanent: true
+    cosmicauracle-redirect:
+      redirectRegex:
+        regex: "^https?://cosmicauracle\\.com/(.*)"
+        replacement: "https://www.cosmicauracle.com/$1"
+        permanent: true
+    funemployed-redirect:
+      redirectRegex:
+        regex: "^https?://funemployed\\.com/(.*)"
+        replacement: "https://www.funemployed.com/$1"
+        permanent: true
+
+  services:
+    structana-files:
+      fileserver:
+        root: /srv/www/structana
+    cosmicauracle-files:
+      fileserver:
+        root: /srv/www/cosmicauracle
+    funemployed-files:
+      fileserver:
+        root: /srv/www/funemployed
