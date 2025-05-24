@@ -27,5 +27,21 @@ services:
     depends_on:
       - app
 
+  py-backend:
+    build: ./py-backend
+    labels:
+      - "traefik.http.routers.py-backend.rule=PathPrefix(`/api/py`)"
+      - "traefik.http.services.py-backend.loadbalancer.server.port=8000"
+
+  traefik:
+    image: traefik:v2.9
+    command:
+      - "--providers.docker=true"
+      - "--entrypoints.web.address=:80"
+    ports:
+      - "8080:80"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+
 volumes:
   mongo-data:
