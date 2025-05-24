@@ -28,24 +28,32 @@ services:
     volumes:
       - mongo-data:/data/db
 
-  nginx:
-    image: nginx:latest
+  traefik:
+    image: traefik:v2.10
     ports:
       - "80:80"
       - "443:443"
     volumes:
-      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./traefik/traefik.yml:/etc/traefik/traefik.yml:ro
+      - ./traefik/dynamic.toml:/etc/traefik/dynamic.toml:ro
+      - /var/run/docker.sock:/var/run/docker.sock:ro
     depends_on:
       - app
 
+
+  py-backend:
+    build: ./py-backend
+    labels:
+      - "traefik.http.routers.py-backend.rule=PathPrefix(`/api/py`)"
+      - "traefik.http.services.py-backend.loadbalancer.server.port=8000"
+
   traefik:
-    image: traefik:v2.11
+    image: traefik:v2.9
     command:
-      - --providers.docker=true
-      - --entrypoints.web.address=:80
+      - "--providers.docker=true"
+      - "--entrypoints.web.address=:80"
     ports:
       - "8080:80"
-      - "8081:8080"
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
 
